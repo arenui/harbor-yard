@@ -1,0 +1,14 @@
+---
+- name: Ensure destination root exists
+  ansible.builtin.file:
+    path: "{{ stacks_dest_root }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Deploy each stack
+  ansible.builtin.include_tasks: deploy_one.yml
+  loop: "{{ stacks }}"
+  loop_control:
+    loop_var: stack_name

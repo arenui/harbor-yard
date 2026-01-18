@@ -1,0 +1,11 @@
+---
+harbor_yard_enable_timer: true
+
+harbor_yard_repo_url: ""
+harbor_yard_branch: "main"
+harbor_yard_inventory_path: "private/inventory.pull.yml"
+harbor_yard_playbook_path: "public/site.yml"
+
+harbor_yard_timer_onboot: "5min"
+harbor_yard_timer_interval: "1h"
+harbor_yard_timer_random_delay: "10min"

@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+REPO="{{ harbor_yard_repo_url }}"
+BRANCH="{{ harbor_yard_branch }}"
+INVENTORY="{{ harbor_yard_inventory_path }}"
+PLAYBOOK="{{ harbor_yard_playbook_path }}"
+HOST="$(hostname -s)"
+
+exec ansible-pull \
+  -U "${REPO}" \
+  -C "${BRANCH}" \
+  -i "${INVENTORY}" \
+  "${PLAYBOOK}" \
+  -l "${HOST}"

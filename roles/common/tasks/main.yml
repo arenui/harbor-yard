@@ -1,0 +1,54 @@
+---
+- name: Assert hostname matches inventory name (recommended for ansible-pull)
+  ansible.builtin.assert:
+    that:
+      - inventory_hostname == ansible_hostname
+    fail_msg: >
+      inventory_hostname ({{ inventory_hostname }}) != ansible_hostname ({{ ansible_hostname }}).
+      For ansible-pull, set the machine hostname to match the inventory host name.
+  when: common_assert_hostname_match
+
+- name: Update apt cache
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+  when: ansible_os_family == "Debian"
+
+- name: Install baseline packages
+  ansible.builtin.apt:
+    name: "{{ common_packages }}"
+    state: present
+  when: ansible_os_family == "Debian"
+
+- name: Set timezone
+  community.general.timezone:
+    name: "{{ common_timezone }}"
+  when:
+    - common_timezone is defined
+    - common_timezone | length > 0
+
+- name: Ensure directories exist
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: directory
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}"
+    mode: "{{ item.mode }}"
+  loop: "{{ common_dirs }}"
+
+- name: Ensure users exist
+  ansible.builtin.user:
+    name: "{{ item.name }}"
+    groups: "{{ item.groups | default([]) }}"
+    append: true
+    shell: /bin/bash
+    state: present
+    create_home: true
+  loop: "{{ common_users }}"
+
+- name: Ensure authorized keys for users
+  ansible.posix.authorized_key:
+    user: "{{ item.0.name }}"
+    key: "{{ item.1 }}"
+    state: present
+  loop: "{{ common_users | subelements('ssh_authorized_keys', skip_missing=true) }}"

@@ -1,0 +1,31 @@
+---
+common_assert_hostname_match: true
+
+common_timezone: "Etc/UTC"
+
+common_packages:
+  - ca-certificates
+  - curl
+  - git
+  - jq
+  - htop
+  - tmux
+  - unzip
+
+# Optional users to manage
+# common_users:
+#   - name: yourname
+#     groups: ["sudo", "docker"]
+#     ssh_authorized_keys:
+#       - "ssh-ed25519 AAAA... yourkey"
+common_users: []
+
+common_dirs:
+  - path: /opt/stacks
+    owner: root
+    group: root
+    mode: "0755"
+  - path: /etc/homelab/secrets
+    owner: root
+    group: root
+    mode: "0750"

@@ -1,0 +1,91 @@
+---
+- name: Define paths for stack
+  ansible.builtin.set_fact:
+    stack_src: "{{ stacks_src_root }}/{{ stack_name }}"
+    stack_dest: "{{ stacks_dest_root }}/{{ stack_name }}"
+    stack_env_file: >-
+      {{ (stacks_config.get(stack_name, {}).get('env_file'))
+         | default(stacks_env_dir ~ '/' ~ stack_name ~ '.env', true) }}
+    stack_project_name: >-
+      {{ stacks_config.get(stack_name, {}).get('project_name') | default(stack_name, true) }}
+
+- name: Ensure stack source exists in repo
+  ansible.builtin.stat:
+    path: "{{ stack_src }}"
+  register: _stack_src_stat
+
+- name: Fail if stack is missing from stacks/ directory
+  ansible.builtin.fail:
+    msg: "Stack '{{ stack_name }}' not found at {{ stack_src }}. Add it under public/stacks/{{ stack_name }}/"
+  when: not _stack_src_stat.stat.exists
+
+- name: Ensure stack destination exists
+  ansible.builtin.file:
+    path: "{{ stack_dest }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Copy stack files to destination
+  ansible.builtin.copy:
+    src: "{{ stack_src }}/"
+    dest: "{{ stack_dest }}/"
+    owner: root
+    group: root
+    mode: "u=rwX,g=rX,o=rX"
+
+- name: Detect compose file (compose.yml)
+  ansible.builtin.stat:
+    path: "{{ stack_dest }}/compose.yml"
+  register: _compose_yml
+
+- name: Detect compose file (docker-compose.yml)
+  ansible.builtin.stat:
+    path: "{{ stack_dest }}/docker-compose.yml"
+  register: _docker_compose_yml
+
+- name: Choose compose file
+  ansible.builtin.set_fact:
+    stack_compose_file: >-
+      {% if _compose_yml.stat.exists %}compose.yml
+      {% elif _docker_compose_yml.stat.exists %}docker-compose.yml
+      {% else %}{% endif %}
+
+- name: Fail if no compose file found
+  ansible.builtin.fail:
+    msg: "No compose file found in {{ stack_dest }}. Add compose.yml or docker-compose.yml."
+  when: stack_compose_file | length == 0
+
+- name: Check env file presence
+  ansible.builtin.stat:
+    path: "{{ stack_env_file }}"
+  register: _env_stat
+
+- name: Fail if env file missing (when required)
+  ansible.builtin.fail:
+    msg: >
+      Missing env file for stack '{{ stack_name }}' at {{ stack_env_file }}.
+      Create it on the host (or set stacks_config.{{ stack_name }}.env_file).
+  when:
+    - stacks_require_env
+    - not _env_stat.stat.exists
+
+- name: Build compose base command
+  ansible.builtin.set_fact:
+    compose_base_cmd: >-
+      docker compose
+      --project-name {{ stack_project_name }}
+      -f {{ stack_compose_file }}
+      {% if _env_stat.stat.exists %} --env-file {{ stack_env_file }}{% endif %}
+
+- name: Pull images (optional)
+  ansible.builtin.command: "{{ compose_base_cmd }} pull"
+  args:
+    chdir: "{{ stack_dest }}"
+  when: stacks_pull_images
+
+- name: Bring stack up
+  ansible.builtin.command: "{{ compose_base_cmd }} up -d {{ stacks_up_args }}"
+  args:
+    chdir: "{{ stack_dest }}"

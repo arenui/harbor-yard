@@ -1,0 +1,47 @@
+---
+- name: Skip timer setup if disabled
+  ansible.builtin.meta: end_play
+  when: not harbor_yard_enable_timer
+
+- name: Skip timer setup if repo url not set
+  ansible.builtin.debug:
+    msg: "harbor_yard_repo_url not set; skipping pull timer setup."
+  when: harbor_yard_repo_url | length == 0
+
+- name: End if repo url not set
+  ansible.builtin.meta: end_play
+  when: harbor_yard_repo_url | length == 0
+
+- name: Install pull script
+  ansible.builtin.template:
+    src: harbor-yard-pull.sh.j2
+    dest: /usr/local/bin/harbor-yard-pull
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Install systemd service
+  ansible.builtin.template:
+    src: harbor-yard.service.j2
+    dest: /etc/systemd/system/harbor-yard.service
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Install systemd timer
+  ansible.builtin.template:
+    src: harbor-yard.timer.j2
+    dest: /etc/systemd/system/harbor-yard.timer
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Reload systemd
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Enable and start timer
+  ansible.builtin.systemd:
+    name: harbor-yard.timer
+    enabled: true
+    state: started

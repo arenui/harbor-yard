@@ -1,0 +1,18 @@
+---
+docker_users: []
+
+docker_daemon_defaults:
+  log-driver: "json-file"
+  log-opts:
+    max-size: "10m"
+    max-file: "3"
+
+# Merge overrides into defaults (set in group_vars/host_vars)
+docker_daemon_overrides: {}
+
+docker_packages:
+  - docker-ce
+  - docker-ce-cli
+  - containerd.io
+  - docker-buildx-plugin
+  - docker-compose-plugin

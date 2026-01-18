@@ -1,0 +1,26 @@
+---
+stacks: []
+
+stacks_src_root: "{{ playbook_dir }}/stacks"
+stacks_dest_root: "/opt/stacks"
+stacks_env_dir: "/etc/homelab/secrets"
+
+stacks_compose_candidates:
+  - "compose.yml"
+  - "docker-compose.yml"
+
+# If true: fail if env file missing for a stack
+stacks_require_env: false
+
+# If true: run `docker compose pull` before up
+stacks_pull_images: true
+
+# Extra args for `docker compose up`
+stacks_up_args: "--remove-orphans"
+
+# Optional per-stack overrides:
+# stacks_config:
+#   homeassistant:
+#     env_file: "/etc/homelab/secrets/homeassistant.env"
+#     project_name: "ha"
+stacks_config: {}
