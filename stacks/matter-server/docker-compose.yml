@@ -1,0 +1,31 @@
+---
+# Matter Server - Python Matter Server for Home Assistant
+# Documentation: https://github.com/home-assistant-libs/python-matter-server
+#
+# Required env vars (in .env file):
+#   TZ=America/Los_Angeles
+#
+# Optional env vars:
+#   MATTER_SERVER_TAG=stable
+#   DOCKER_DATA_DIR=/srv/stacks/matter-server
+
+version: '3.9'
+
+services:
+  matter-server:
+    image: ghcr.io/matter-js/python-matter-server:${MATTER_SERVER_TAG:-stable}
+    container_name: matter-server
+    restart: unless-stopped
+    # Required for mDNS to work correctly
+    network_mode: host
+    environment:
+      - TZ=${TZ:-Etc/UTC}
+    security_opt:
+      # Needed for Bluetooth via dbus
+      - apparmor:unconfined
+    volumes:
+      - ${DOCKER_DATA_DIR:-/srv/stacks}/matter-server/data:/data/
+      # Required for Bluetooth via D-Bus
+      - /run/dbus:/run/dbus:ro
+    # If you adjust command line, make sure to pass the default CMD arguments too:
+    #command: --storage-path /data --paa-root-cert-dir /data/credentials --bluetooth-adapter 0
