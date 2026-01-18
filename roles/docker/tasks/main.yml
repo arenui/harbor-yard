@@ -35,6 +35,7 @@
     chmod a+r /etc/apt/keyrings/docker.gpg
   args:
     creates: /etc/apt/keyrings/docker.gpg
+    executable: /bin/bash
   when:
     - ansible_os_family == "Debian"
     - ansible_distribution in ["Ubuntu", "Debian"]
