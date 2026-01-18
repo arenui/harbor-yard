@@ -1,0 +1,33 @@
+---
+# Zigbee2MQTT - Zigbee to MQTT bridge
+# Documentation: https://www.zigbee2mqtt.io/guide/installation/02_docker.html
+#
+# Required env vars (in .env file):
+#   TZ=America/Los_Angeles
+#   ZIGBEE2MQTT_CONFIG_MQTT_SERVER=mqtt://your-mqtt-broker:1883
+#
+# Optional env vars:
+#   ZIGBEE2MQTT_TAG=latest
+#   ZIGBEE_ADAPTER_PATH=/dev/ttyUSB0
+#   DOCKER_DATA_DIR=/srv/stacks/zigbee2mqtt
+
+version: '3.9'
+
+services:
+  zigbee2mqtt:
+    image: koenkk/zigbee2mqtt:${ZIGBEE2MQTT_TAG:-latest}
+    container_name: zigbee2mqtt
+    restart: unless-stopped
+    environment:
+      - TZ=${TZ:-Etc/UTC}
+    volumes:
+      - ${DOCKER_DATA_DIR:-/srv/stacks}/zigbee2mqtt/data:/app/data
+    ports:
+      - "8080:8080"
+    # Healthcheck for container monitoring
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
