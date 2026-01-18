@@ -4,10 +4,12 @@
     stack_src: "{{ stacks_src_root }}/{{ stack_name }}"
     stack_dest: "{{ stacks_dest_root }}/{{ stack_name }}"
     stack_env_file: >-
-      {{ (stacks_config.get(stack_name, {}).get('env_file'))
+      {{ (stacks_config[stack_name]['env_file'] | default(none))
          | default(stacks_env_dir ~ '/' ~ stack_name ~ '.env', true) }}
     stack_project_name: >-
-      {{ stacks_config.get(stack_name, {}).get('project_name') | default(stack_name, true) }}
+      {{ stacks_config[stack_name]['project_name'] | default(stack_name, true) }}
+  vars:
+    _stack_cfg: "{{ stacks_config[stack_name] | default({}) }}"
 
 - name: Ensure stack source exists in repo
   ansible.builtin.stat:
@@ -34,6 +36,7 @@
     owner: root
     group: root
     mode: "u=rwX,g=rX,o=rX"
+  register: _stack_files_copied
 
 - name: Detect compose file (compose.yml)
   ansible.builtin.stat:
@@ -48,14 +51,14 @@
 - name: Choose compose file
   ansible.builtin.set_fact:
     stack_compose_file: >-
-      {% if _compose_yml.stat.exists %}compose.yml
-      {% elif _docker_compose_yml.stat.exists %}docker-compose.yml
+      {% if _compose_yml.stat.exists %}{{ stack_dest }}/compose.yml
+      {% elif _docker_compose_yml.stat.exists %}{{ stack_dest }}/docker-compose.yml
       {% else %}{% endif %}
 
 - name: Fail if no compose file found
   ansible.builtin.fail:
     msg: "No compose file found in {{ stack_dest }}. Add compose.yml or docker-compose.yml."
-  when: stack_compose_file | length == 0
+  when: stack_compose_file | trim | length == 0
 
 - name: Check env file presence
   ansible.builtin.stat:
@@ -71,21 +74,21 @@
     - stacks_require_env
     - not _env_stat.stat.exists
 
-- name: Build compose base command
-  ansible.builtin.set_fact:
-    compose_base_cmd: >-
-      docker compose
-      --project-name {{ stack_project_name }}
-      -f {{ stack_compose_file }}
-      {% if _env_stat.stat.exists %} --env-file {{ stack_env_file }}{% endif %}
+- name: Deploy stack using docker compose  # noqa: no-changed-when
+  community.docker.docker_compose_v2:
+    project_src: "{{ stack_dest }}"
+    project_name: "{{ stack_project_name }}"
+    files:
+      - "{{ stack_compose_file | basename }}"
+    env_files: "{{ [stack_env_file] if _env_stat.stat.exists else omit }}"
+    state: present
+    pull: "{{ 'always' if stacks_pull_images else 'missing' }}"
+    remove_orphans: "{{ stacks_remove_orphans }}"
+    recreate: "{{ 'always' if _stack_files_copied.changed else 'never' }}"
+  register: _stack_deploy_result
 
-- name: Pull images (optional)
-  ansible.builtin.command: "{{ compose_base_cmd }} pull"
-  args:
-    chdir: "{{ stack_dest }}"
-  when: stacks_pull_images
+- name: Show deployment result
+  ansible.builtin.debug:
+    msg: "Stack '{{ stack_name }}' deployment: {{ 'changed' if _stack_deploy_result.changed else 'ok' }}"
+    verbosity: 1
 
-- name: Bring stack up
-  ansible.builtin.command: "{{ compose_base_cmd }} up -d {{ stacks_up_args }}"
-  args:
-    chdir: "{{ stack_dest }}"

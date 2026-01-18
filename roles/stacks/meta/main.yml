@@ -1,0 +1,22 @@
+---
+galaxy_info:
+  author: arenui
+  description: Deploy Docker Compose stacks
+  license: MIT
+  min_ansible_version: "2.15"
+  platforms:
+    - name: Ubuntu
+      versions:
+        - jammy
+        - noble
+    - name: Debian
+      versions:
+        - bookworm
+
+  galaxy_tags:
+    - docker
+    - compose
+    - containers
+
+dependencies:
+  - role: docker

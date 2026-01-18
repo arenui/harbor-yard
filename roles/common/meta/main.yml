@@ -1,0 +1,21 @@
+---
+galaxy_info:
+  author: arenui
+  description: Common baseline configuration for all hosts
+  license: MIT
+  min_ansible_version: "2.15"
+  platforms:
+    - name: Ubuntu
+      versions:
+        - jammy
+        - noble
+    - name: Debian
+      versions:
+        - bookworm
+
+  galaxy_tags:
+    - system
+    - baseline
+    - common
+
+dependencies: []

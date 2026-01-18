@@ -1,10 +1,18 @@
 ---
+# List of stack names to deploy on this host
+# Override in host_vars: stacks: [homeassistant, zigbee2mqtt]
 stacks: []
 
+# Where stack compose files live in the repo
 stacks_src_root: "{{ playbook_dir }}/stacks"
+
+# Where stacks are deployed on target hosts
 stacks_dest_root: "/opt/stacks"
+
+# Where to look for .env files (secrets)
 stacks_env_dir: "/etc/homelab/secrets"
 
+# Compose file name candidates (searched in order)
 stacks_compose_candidates:
   - "compose.yml"
   - "docker-compose.yml"
@@ -12,11 +20,11 @@ stacks_compose_candidates:
 # If true: fail if env file missing for a stack
 stacks_require_env: false
 
-# If true: run `docker compose pull` before up
+# If true: always pull images before deploying
 stacks_pull_images: true
 
-# Extra args for `docker compose up`
-stacks_up_args: "--remove-orphans"
+# Remove containers for services not defined in compose file
+stacks_remove_orphans: true
 
 # Optional per-stack overrides:
 # stacks_config:
@@ -24,3 +32,4 @@ stacks_up_args: "--remove-orphans"
 #     env_file: "/etc/homelab/secrets/homeassistant.env"
 #     project_name: "ha"
 stacks_config: {}
+
