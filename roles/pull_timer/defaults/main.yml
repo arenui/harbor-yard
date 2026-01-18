@@ -1,11 +1,26 @@
 ---
+# Enable/disable the pull timer
 harbor_yard_enable_timer: true
 
+# Git repository URL (SSH or HTTPS)
+# MUST be set in group_vars or host_vars
 harbor_yard_repo_url: ""
+
+# Git branch to pull
 harbor_yard_branch: "main"
+
+# Paths relative to repo root
 harbor_yard_inventory_path: "private/inventory.pull.yml"
 harbor_yard_playbook_path: "public/site.yml"
 
+# Timer schedule settings
 harbor_yard_timer_onboot: "5min"
 harbor_yard_timer_interval: "1h"
 harbor_yard_timer_random_delay: "10min"
+
+# Logging
+harbor_yard_log_file: "/var/log/harbor-yard.log"
+
+# Extra arguments to pass to ansible-pull
+# Example: "--vault-password-file=/etc/ansible/vault_pass"
+harbor_yard_extra_args: ""

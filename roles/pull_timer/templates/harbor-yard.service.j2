@@ -1,8 +1,24 @@
 [Unit]
 Description=Harbor Yard converge (ansible-pull)
-After=network-online.target
+Documentation=https://github.com/arenui/harbor-yard
+After=network-online.target docker.service
 Wants=network-online.target
+Requires=docker.service
 
 [Service]
 Type=oneshot
 ExecStart=/usr/local/bin/harbor-yard-pull
+
+# Security hardening
+NoNewPrivileges=false
+ProtectSystem=false
+PrivateTmp=true
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=harbor-yard
+
+# Allow sufficient time for large deployments
+TimeoutStartSec=1800
+

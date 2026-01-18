@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Harbor Yard ansible-pull wrapper script
+# Managed by Ansible - do not edit manually
 set -euo pipefail
 
 REPO="{{ harbor_yard_repo_url }}"
@@ -6,10 +8,33 @@ BRANCH="{{ harbor_yard_branch }}"
 INVENTORY="{{ harbor_yard_inventory_path }}"
 PLAYBOOK="{{ harbor_yard_playbook_path }}"
 HOST="$(hostname -s)"
+LOGFILE="{{ harbor_yard_log_file | default('/var/log/harbor-yard.log') }}"
 
-exec ansible-pull \
-  -U "${REPO}" \
-  -C "${BRANCH}" \
-  -i "${INVENTORY}" \
-  "${PLAYBOOK}" \
-  -l "${HOST}"
+# Ensure log directory exists
+mkdir -p "$(dirname "${LOGFILE}")"
+
+# Log function with timestamp
+log() {
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" | tee -a "${LOGFILE}"
+}
+
+log "Starting Harbor Yard converge for host: ${HOST}"
+log "Repository: ${REPO} (branch: ${BRANCH})"
+
+# Run ansible-pull with logging
+if ansible-pull \
+    -U "${REPO}" \
+    -C "${BRANCH}" \
+    -i "${INVENTORY}" \
+    "${PLAYBOOK}" \
+    -l "${HOST}" \
+    {{ harbor_yard_extra_args | default('') }} \
+    2>&1 | tee -a "${LOGFILE}"; then
+    log "Harbor Yard converge completed successfully"
+    exit 0
+else
+    EXIT_CODE=$?
+    log "Harbor Yard converge failed with exit code: ${EXIT_CODE}"
+    exit ${EXIT_CODE}
+fi
+
