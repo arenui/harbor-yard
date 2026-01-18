@@ -1,0 +1,21 @@
+---
+# Example host_vars file
+# Copy to host_vars/<hostname>.yml and customize
+#
+# This file is loaded automatically when ansible runs against <hostname>
+
+# Stacks to deploy on this host
+# These must exist in stacks/ directory
+stacks:
+  - homeassistant
+  - zigbee2mqtt
+
+# Optional: per-stack configuration overrides
+# stacks_config:
+#   homeassistant:
+#     env_file: "/etc/homelab/secrets/homeassistant.env"
+#     project_name: "ha"
+
+# Optional: Docker daemon overrides for this host
+# docker_daemon_overrides:
+#   data-root: "/data/docker"

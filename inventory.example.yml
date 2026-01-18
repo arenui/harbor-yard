@@ -1,0 +1,39 @@
+---
+# Example inventory for Harbor Yard
+# Copy this file and customize for your environment
+#
+# For push-based runs (from control node):
+#   ansible-playbook -i inventory.yml site.yml
+#
+# For ansible-pull (local runs):
+#   Create a separate inventory with ansible_connection: local
+
+all:
+  children:
+    # Group by function
+    homelab:
+      children:
+        # Compute nodes - main servers
+        compute:
+          hosts:
+            server1:
+              ansible_host: 192.168.1.10
+            server2:
+              ansible_host: 192.168.1.11
+
+        # Edge devices - Raspberry Pi, etc.
+        edge:
+          hosts:
+            pi01:
+              ansible_host: 192.168.1.20
+
+        # Optional: GPU-enabled nodes
+        gpu:
+          hosts:
+            gpu-server:
+              ansible_host: 192.168.1.30
+
+  vars:
+    # Default SSH user
+    ansible_user: your-username
+    ansible_python_interpreter: /usr/bin/python3

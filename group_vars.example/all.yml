@@ -1,0 +1,16 @@
+---
+# Example group_vars for all hosts
+# Copy to group_vars/all.yml and customize
+
+# Timezone for all hosts
+common_timezone: "Etc/UTC"
+
+# Users to add to docker group
+docker_users:
+  - your-username
+
+# Pull timer settings (for ansible-pull)
+# harbor_yard_repo_url: "git@github.com:your-username/harbor-yard.git"
+# harbor_yard_branch: "main"
+# harbor_yard_inventory_path: "inventory.pull.yml"
+# harbor_yard_playbook_path: "site.yml"
