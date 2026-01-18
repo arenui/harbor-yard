@@ -1,0 +1,9 @@
+# SSH config for Harbor Yard ansible-pull
+# Managed by Ansible - do not edit manually
+
+Host github.com
+    HostName github.com
+    User git
+    IdentityFile /root/.ssh/harbor-yard-deploy
+    IdentitiesOnly yes
+    StrictHostKeyChecking accept-new
