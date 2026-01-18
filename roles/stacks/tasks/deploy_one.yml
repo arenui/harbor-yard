@@ -51,9 +51,12 @@
 - name: Choose compose file
   ansible.builtin.set_fact:
     stack_compose_file: >-
-      {% if _compose_yml.stat.exists %}{{ stack_dest }}/compose.yml
-      {% elif _docker_compose_yml.stat.exists %}{{ stack_dest }}/docker-compose.yml
-      {% else %}{% endif %}
+      {%- if _compose_yml.stat.exists -%}
+      {{ stack_dest }}/compose.yml
+      {%- elif _docker_compose_yml.stat.exists -%}
+      {{ stack_dest }}/docker-compose.yml
+      {%- else -%}
+      {%- endif -%}
 
 - name: Fail if no compose file found
   ansible.builtin.fail:
@@ -74,7 +77,7 @@
     - stacks_require_env
     - not _env_stat.stat.exists
 
-- name: Deploy stack using docker compose  # noqa: no-changed-when
+- name: Deploy stack using docker compose # noqa: no-changed-when
   community.docker.docker_compose_v2:
     project_src: "{{ stack_dest }}"
     project_name: "{{ stack_project_name }}"
@@ -91,4 +94,3 @@
   ansible.builtin.debug:
     msg: "Stack '{{ stack_name }}' deployment: {{ 'changed' if _stack_deploy_result.changed else 'ok' }}"
     verbosity: 1
-
