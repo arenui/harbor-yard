@@ -20,16 +20,6 @@
     group: root
     mode: "0700"
 
-- name: Deploy GitHub deploy key
-  ansible.builtin.copy:
-    content: "{{ harbor_yard_github_deploy_key }}"
-    dest: /root/.ssh/harbor-yard-deploy
-    owner: root
-    group: root
-    mode: "0600"
-  when: harbor_yard_github_deploy_key is defined and harbor_yard_github_deploy_key | length > 0
-  no_log: true
-
 - name: Configure SSH to use deploy key for GitHub
   ansible.builtin.template:
     src: ssh_config.j2
@@ -37,7 +27,6 @@
     owner: root
     group: root
     mode: "0600"
-  when: harbor_yard_github_deploy_key is defined and harbor_yard_github_deploy_key | length > 0
 
 - name: Install pull script
   ansible.builtin.template:

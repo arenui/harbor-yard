@@ -24,8 +24,3 @@ harbor_yard_log_file: "/var/log/harbor-yard.log"
 # Extra arguments to pass to ansible-pull
 # Example: "--vault-password-file=/etc/ansible/vault_pass"
 harbor_yard_extra_args: ""
-
-# GitHub deploy key for private repository access
-# This should be set as an encrypted vault variable in group_vars or host_vars
-# Leave empty to skip SSH key deployment (for public repos or other auth methods)
-harbor_yard_github_deploy_key: ""

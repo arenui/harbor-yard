@@ -11,8 +11,6 @@
 #   ZIGBEE_ADAPTER_PATH=/dev/ttyUSB0
 #   DOCKER_DATA_DIR=/srv/stacks/zigbee2mqtt
 
-version: '3.9'
-
 services:
   zigbee2mqtt:
     image: koenkk/zigbee2mqtt:${ZIGBEE2MQTT_TAG:-latest}

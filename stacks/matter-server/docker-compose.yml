@@ -9,8 +9,6 @@
 #   MATTER_SERVER_TAG=stable
 #   DOCKER_DATA_DIR=/srv/stacks/matter-server
 
-version: '3.9'
-
 services:
   matter-server:
     image: ghcr.io/matter-js/python-matter-server:${MATTER_SERVER_TAG:-stable}

@@ -2,9 +2,9 @@
 - name: Assert hostname matches inventory name (recommended for ansible-pull)
   ansible.builtin.assert:
     that:
-      - inventory_hostname == ansible_hostname
+      - inventory_hostname == ansible_facts['hostname']
     fail_msg: >
-      inventory_hostname ({{ inventory_hostname }}) != ansible_hostname ({{ ansible_hostname }}).
+      inventory_hostname ({{ inventory_hostname }}) != ansible_hostname ({{ ansible_facts['hostname'] }}).
       For ansible-pull, set the machine hostname to match the inventory host name.
   when: common_assert_hostname_match
 
@@ -12,13 +12,13 @@
   ansible.builtin.apt:
     update_cache: true
     cache_valid_time: 3600
-  when: ansible_os_family == "Debian"
+  when: ansible_facts['os_family'] == "Debian"
 
 - name: Install baseline packages
   ansible.builtin.apt:
     name: "{{ common_packages }}"
     state: present
-  when: ansible_os_family == "Debian"
+  when: ansible_facts['os_family'] == "Debian"
 
 - name: Set timezone
   community.general.timezone:

@@ -2,10 +2,10 @@
 - name: Map architecture to Docker repo arch
   ansible.builtin.set_fact:
     docker_repo_arch: >-
-      {% if ansible_architecture in ['x86_64', 'amd64'] %}amd64
-      {% elif ansible_architecture in ['aarch64', 'arm64'] %}arm64
-      {% elif ansible_architecture in ['armv7l'] %}armhf
-      {% else %}{{ ansible_architecture }}
+      {% if ansible_facts['architecture'] in ['x86_64', 'amd64'] %}amd64
+      {% elif ansible_facts['architecture'] in ['aarch64', 'arm64'] %}arm64
+      {% elif ansible_facts['architecture'] in ['armv7l'] %}armhf
+      {% else %}{{ ansible_facts['architecture'] }}
       {% endif %}
 
 - name: Install Docker repo prerequisites
@@ -16,7 +16,7 @@
       - gnupg
     state: present
     update_cache: true
-  when: ansible_os_family == "Debian"
+  when: ansible_facts['os_family'] == "Debian"
 
 - name: Ensure keyrings dir exists
   ansible.builtin.file:
@@ -25,39 +25,39 @@
     owner: root
     group: root
     mode: "0755"
-  when: ansible_os_family == "Debian"
+  when: ansible_facts['os_family'] == "Debian"
 
 - name: Install Docker GPG key (keyring)
   ansible.builtin.shell: |
     set -euo pipefail
-    curl -fsSL "https://download.docker.com/linux/{{ ansible_distribution | lower }}/gpg" \
+    curl -fsSL "https://download.docker.com/linux/{{ ansible_facts['distribution'] | lower }}/gpg" \
       | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
     chmod a+r /etc/apt/keyrings/docker.gpg
   args:
     creates: /etc/apt/keyrings/docker.gpg
     executable: /bin/bash
   when:
-    - ansible_os_family == "Debian"
-    - ansible_distribution in ["Ubuntu", "Debian"]
+    - ansible_facts['os_family'] == "Debian"
+    - ansible_facts['distribution'] in ["Ubuntu", "Debian"]
 
 - name: Add Docker apt repo
   ansible.builtin.apt_repository:
     repo: >-
       deb [arch={{ docker_repo_arch }} signed-by=/etc/apt/keyrings/docker.gpg]
-      https://download.docker.com/linux/{{ ansible_distribution | lower }}
-      {{ ansible_distribution_release }} stable
+      https://download.docker.com/linux/{{ ansible_facts['distribution'] | lower }}
+      {{ ansible_facts['distribution_release'] }} stable
     state: present
     filename: docker
     update_cache: true
   when:
-    - ansible_os_family == "Debian"
-    - ansible_distribution in ["Ubuntu", "Debian"]
+    - ansible_facts['os_family'] == "Debian"
+    - ansible_facts['distribution'] in ["Ubuntu", "Debian"]
 
 - name: Install Docker Engine + plugins
   ansible.builtin.apt:
     name: "{{ docker_packages }}"
     state: present
-  when: ansible_os_family == "Debian"
+  when: ansible_facts['os_family'] == "Debian"
 
 - name: Ensure docker service enabled and running
   ansible.builtin.service:
