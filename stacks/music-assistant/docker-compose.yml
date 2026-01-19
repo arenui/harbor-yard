@@ -1,0 +1,31 @@
+---
+# Music Assistant - Multi-room audio server and player
+# Documentation: https://music-assistant.io/
+#
+# Required env vars (in .env file):
+#   TZ=America/Los_Angeles
+#
+# Optional env vars:
+#   MUSIC_ASSISTANT_TAG=latest
+#   MUSIC_ASSISTANT_LOG_LEVEL=info
+#   DOCKER_DATA_DIR=/srv/stacks/music-assistant
+
+services:
+  music-assistant-server:
+    image: ghcr.io/music-assistant/server:${MUSIC_ASSISTANT_TAG:-latest}
+    container_name: music-assistant-server
+    restart: unless-stopped
+    # Network mode must be set to host for MA to work correctly
+    network_mode: host
+    environment:
+      - TZ=${TZ:-Etc/UTC}
+      # Logging level: critical, error, warning, info, debug
+      - LOG_LEVEL=${MUSIC_ASSISTANT_LOG_LEVEL:-info}
+    volumes:
+      - ${DOCKER_DATA_DIR:-/srv/stacks}/music-assistant/data:/data
+    # Privileged caps (and security-opt) needed to mount SMB folders within the container
+    cap_add:
+      - SYS_ADMIN
+      - DAC_READ_SEARCH
+    security_opt:
+      - apparmor:unconfined
