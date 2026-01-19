@@ -1,0 +1,25 @@
+---
+# Home Assistant - Open source home automation platform
+# Documentation: https://www.home-assistant.io/installation/linux#docker-compose
+#
+# Required env vars (in .env file):
+#   TZ=America/Los_Angeles
+#
+# Optional env vars:
+#   HOMEASSISTANT_TAG=stable
+#   DOCKER_DATA_DIR=/srv/stacks/homeassistant
+
+services:
+  homeassistant:
+    image: ghcr.io/home-assistant/home-assistant:${HOMEASSISTANT_TAG:-stable}
+    container_name: homeassistant
+    restart: unless-stopped
+    privileged: true
+    # Network mode must be set to host for mDNS and device discovery
+    network_mode: host
+    environment:
+      - TZ=${TZ:-Etc/UTC}
+    volumes:
+      - ${DOCKER_DATA_DIR:-/srv/stacks}/homeassistant/config:/config
+      - /etc/localtime:/etc/localtime:ro
+      - /run/dbus:/run/dbus:ro
