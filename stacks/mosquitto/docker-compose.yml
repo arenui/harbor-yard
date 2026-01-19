@@ -1,0 +1,39 @@
+---
+# Mosquitto - Eclipse MQTT Broker
+# Documentation: https://mosquitto.org/documentation/
+#
+# Required env vars (in .env file):
+#   TZ=America/Los_Angeles
+#
+# Optional env vars:
+#   MOSQUITTO_TAG=latest
+#   DOCKER_DATA_DIR=/srv/stacks
+#
+# Config files (encrypted in private/configs/):
+#   mosquitto-mosquitto.conf.enc -> /srv/stacks/mosquitto/mosquitto.conf
+#   mosquitto-acl.enc            -> /srv/stacks/mosquitto/acl
+#   mosquitto-passwd.enc         -> /srv/stacks/mosquitto/passwd
+
+services:
+  mosquitto:
+    image: eclipse-mosquitto:${MOSQUITTO_TAG:-latest}
+    container_name: mosquitto
+    hostname: mosquitto
+    restart: unless-stopped
+    environment:
+      - TZ=${TZ:-Etc/UTC}
+    ports:
+      - "1883:1883"  # MQTT
+    volumes:
+      - ${DOCKER_DATA_DIR:-/srv/stacks}/mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - ${DOCKER_DATA_DIR:-/srv/stacks}/mosquitto/passwd:/mosquitto/config/passwd:ro
+      - ${DOCKER_DATA_DIR:-/srv/stacks}/mosquitto/acl:/mosquitto/config/acl:ro
+      - ${DOCKER_DATA_DIR:-/srv/stacks}/mosquitto/data:/mosquitto/data
+      - ${DOCKER_DATA_DIR:-/srv/stacks}/mosquitto/log:/mosquitto/log
+    # Healthcheck for container monitoring
+    healthcheck:
+      test: ["CMD", "mosquitto_sub", "-t", "$$SYS/#", "-C", "1", "-i", "healthcheck", "-W", "3"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
