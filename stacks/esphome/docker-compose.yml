@@ -1,0 +1,28 @@
+---
+# ESPHome - ESP8266/ESP32 device manager for Home Automation
+# Documentation: https://esphome.io/guides/getting_started_command_line.html
+#
+# Required env vars (in .env file):
+#   TZ=America/Los_Angeles
+#   ESPHOME_USERNAME=test
+#   ESPHOME_PASSWORD=ChangeMe
+#
+# Optional env vars:
+#   ESPHOME_TAG=latest
+#   DOCKER_DATA_DIR=/srv/stacks/esphome
+
+services:
+  esphome:
+    image: ghcr.io/esphome/esphome:${ESPHOME_TAG:-latest}
+    container_name: esphome
+    restart: unless-stopped
+    privileged: true
+    # Required for mDNS and device discovery
+    network_mode: host
+    environment:
+      - TZ=${TZ:-Etc/UTC}
+      - USERNAME=${ESPHOME_USERNAME}
+      - PASSWORD=${ESPHOME_PASSWORD}
+    volumes:
+      - ${DOCKER_DATA_DIR:-/srv/stacks}/esphome/config:/config
+      - /etc/localtime:/etc/localtime:ro
